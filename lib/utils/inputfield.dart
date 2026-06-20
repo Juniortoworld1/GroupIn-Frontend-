@@ -13,7 +13,7 @@ class InputField extends StatelessWidget {
     required this.controller,
     required this.icon,
     this.isPassword = false,
-    this.hint = "",
+    required this.hint,
   });
 
   @override
@@ -27,16 +27,16 @@ class InputField extends StatelessWidget {
         TextFormField(
           controller: controller,
           obscureText: isPassword, // Hides text if it's a password field
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.transparent),
           decoration: InputDecoration(
             hintText: hint,
             label: Text(label),
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+            hintStyle: TextStyle(color: Colors.black),
             prefixIcon: icon,
-            prefixIconColor: Colors.white.withOpacity(0.5),
+            prefixIconColor: Colors.yellowAccent,
             filled: true,
             // Deep subtle blue/grey tint to match background color 0xFF0B0F19
-            fillColor: Colors.white.withOpacity(0.05),
+            fillColor: Colors.yellowAccent.withOpacity(0.1),
 
             // Modern rounded borders that disappear when not focused
             border: OutlineInputBorder(
