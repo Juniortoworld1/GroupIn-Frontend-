@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:groupin/core/config/enviroment.dart';
+import 'package:image_picker/image_picker.dart';
 
 final dio = Dio();
 
@@ -31,7 +32,7 @@ Future<Response?> signup({
   required String fullName,
   required String password,
   required String email,
-  required String avatar,
+  required XFile avatar,
   String coverImage = "", // Defaulted to empty string if not provided
 }) async {
   try {
