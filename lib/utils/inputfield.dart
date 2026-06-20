@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:groupin/provider/Global.dart';
+import 'package:provider/provider.dart';
 
 class InputField extends StatelessWidget {
   final String label;
@@ -18,6 +20,8 @@ class InputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final watch = context.watch<GlobalValueProvider>() ;
+    final _isDark = watch.getisDarkMode() ;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -30,8 +34,8 @@ class InputField extends StatelessWidget {
           style: const TextStyle(color: Colors.transparent),
           decoration: InputDecoration(
             hintText: hint,
-            label: Text(label),
-            hintStyle: TextStyle(color: Colors.black),
+            label: Text(label , style: TextStyle(color: _isDark?Colors.white:Colors.black),),
+            hintStyle: TextStyle(color: _isDark?Colors.white:Colors.black),
             prefixIcon: icon,
             prefixIconColor: Colors.yellowAccent,
             filled: true,

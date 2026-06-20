@@ -2,7 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:groupin/screens/testing.dart';
 
-import '../screens/login.dart';
+import '../screens/authSigninSignup.dart';
 
 class Routes {
   static String login = "/auth" ;
@@ -10,7 +10,6 @@ class Routes {
   static Map<String , WidgetBuilder> getRoutes(){
     return {
       login:(context)=>const Auth_Login_Signup()  ,
-      testing:(context)=>const Testing()
     } ;
   }
 
