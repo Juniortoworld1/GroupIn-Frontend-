@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:groupin/screens/signup.dart';
 import 'package:provider/provider.dart';
-import '../provider/Global.dart';
+import '../provider/Global.provider.dart';
 import 'login.dart';
 
 class Auth_Login_Signup extends StatefulWidget {
@@ -75,7 +75,7 @@ class _Auth_Login_Signup extends State<Auth_Login_Signup> {
               Expanded( // CRITICAL: This gives FractionallySizedBox the defined space it needs!
                 child: AnimatedFractionallySizedBox(
                   duration: Duration(seconds: 1),
-                  heightFactor: _currentIndex==0?0.67:0.8, // Adjust this decimal (0.0 to 1.0) to change how high the white sheet goes
+                  heightFactor: _currentIndex==0?0.7:0.99, // Adjust this decimal (0.0 to 1.0) to change how high the white sheet goes
                   widthFactor: 1.0,   // Keeps it full width so your input textfields aren't squished
                   alignment: Alignment.bottomCenter, // Keeps the card stuck to the bottom of the screen
                   child: Container(

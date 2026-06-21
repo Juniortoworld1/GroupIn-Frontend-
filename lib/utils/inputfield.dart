@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:groupin/provider/Global.dart';
+import 'package:groupin/provider/Global.provider.dart';
 import 'package:provider/provider.dart';
 
 class InputField extends StatelessWidget {
@@ -8,6 +8,7 @@ class InputField extends StatelessWidget {
   final TextEditingController controller;
   final Icon icon;
   final bool isPassword;
+  final String?Function(String?)? validator ;
 
   const InputField({
     super.key, // Updated to modern super parameter syntax
@@ -16,6 +17,7 @@ class InputField extends StatelessWidget {
     required this.icon,
     this.isPassword = false,
     required this.hint,
+    required this.validator,
   });
 
   @override
@@ -29,9 +31,10 @@ class InputField extends StatelessWidget {
 
         // 2. The Actual Input Field
         TextFormField(
+          validator: validator,
           controller: controller,
           obscureText: isPassword, // Hides text if it's a password field
-          style: const TextStyle(color: Colors.transparent),
+          style: TextStyle(color: _isDark?Colors.white:Colors.black),
           decoration: InputDecoration(
             hintText: hint,
             label: Text(label , style: TextStyle(color: _isDark?Colors.white:Colors.black),),

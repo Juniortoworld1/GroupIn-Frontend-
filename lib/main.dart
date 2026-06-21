@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:groupin/provider/Global.dart';
+import 'package:groupin/provider/Global.provider.dart';
+import 'package:groupin/provider/userlogin.provider.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:groupin/routes/routes.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
+
 void main() {
+  usePathUrlStrategy() ;
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => GlobalValueProvider(),
+    // 1. Use MultiProvider instead of a single ChangeNotifierProvider
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => GlobalValueProvider()),
+        ChangeNotifierProvider(create: (context) => UserLoginProvider()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -19,9 +27,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Provider Routing App',
-      // 1. Set your initial route here
       initialRoute: Routes.login,
-      routes: Routes.getRoutes(),
+      onGenerateRoute: Routes.generateRoute ,
+      debugShowCheckedModeBanner: false, // Optional: hides the debug banner
     );
   }
 }
