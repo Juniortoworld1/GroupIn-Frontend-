@@ -197,7 +197,12 @@ class _HomepageState extends State<Homepage> {
                                                 child: Icon(Icons.heart_broken , color: Colors.white, size: 30,)
                                             ),
                                             SizedBox(width: 16,) ,
-                                            Container(child : Icon(Icons.message, color: Colors.white, size: 30,))
+                                            InkWell(
+                                              onTap: () => _showCommentsBottomSheet(context),
+                                              child: Container(
+                                                  child: Icon(Icons.message, color: Colors.white, size: 30,)
+                                              ),
+                                            )
                                           ],
                                         )
                                       ],
@@ -222,6 +227,70 @@ class _HomepageState extends State<Homepage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showCommentsBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows the sheet to expand beyond half screen if needed
+      backgroundColor: Colors.black12, // Keeps corners rounded beautifully
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5, // Opens up to 60% of the screen
+          minChildSize: 0.3,     // Can be dragged down to 30% before closing
+          maxChildSize: 0.9,     // Can be dragged up to 90% of the screen
+          expand: false,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.black, // Adapts to your theme
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                children: [
+                  // 1. The visual Drag Handle Bar
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // 2. Title Section
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                        "Comments",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                    ),
+                  ),
+                  const Divider(),
+
+                  // 3. Scrollable List of Content
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController, // CRITICAL: Gives drag control to ListView
+                      itemCount: 10,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          leading: const CircleAvatar(child: Icon(Icons.person)),
+                          title: Text("User $index"),
+                          subtitle: const Text("Wow, this UI really is beautiful!"),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
