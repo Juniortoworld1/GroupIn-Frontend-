@@ -9,9 +9,7 @@ import '../routes/routes.dart';
 import '../utils/inputfield.dart';
 
 class LoginForm extends StatefulWidget {
-
   const LoginForm({super.key});
-
 
   @override
   State<LoginForm> createState() => _LoginFormState();
@@ -21,12 +19,8 @@ class _LoginFormState extends State<LoginForm> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false ;
-  @override
-  void initState(){
-    super.initState() ;
+  bool _isLoading = false;
 
-  }
   @override
   void dispose() {
     _usernameController.dispose();
@@ -37,12 +31,13 @@ class _LoginFormState extends State<LoginForm> {
   @override
   Widget build(BuildContext context) {
     final providerValue = context.watch<GlobalValueProvider>();
-    final _isDark = providerValue.getisDarkMode() ;
-    final screenWidth = MediaQuery.sizeOf(context).width ;
+    final _isDark = providerValue.getisDarkMode();
+    final screenWidth = MediaQuery.sizeOf(context).width;
+
     return Center(
       child: AnimatedContainer(
-        duration: Duration(seconds: 2),
-        width: screenWidth>=800?screenWidth*0.6:screenWidth,
+        duration: const Duration(seconds: 2),
+        width: screenWidth >= 800 ? screenWidth * 0.6 : screenWidth,
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
@@ -70,12 +65,25 @@ class _LoginFormState extends State<LoginForm> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 8,) ,
-                InkWell(onTap: (){} , child: Row(mainAxisAlignment:MainAxisAlignment.end , children: [Text("Forgot" , style: TextStyle(fontSize: 15 , color: _isDark?Colors.white:Colors.black),) , SizedBox(width: 5,) , Center(child: Icon(Icons.help , color: _isDark?Colors.white:Colors.black,) , )],),) ,
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () {},
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        "Forgot",
+                        style: TextStyle(fontSize: 15, color: _isDark ? Colors.white : Colors.black),
+                      ),
+                      const SizedBox(width: 5),
+                      Icon(Icons.help, color: _isDark ? Colors.white : Colors.black),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _isLoading
-                      ? null // Disable button while loading to prevent double submissions
+                      ? null
                       : () async {
                     if (_formKey.currentState!.validate()) {
                       setState(() {
@@ -84,29 +92,37 @@ class _LoginFormState extends State<LoginForm> {
 
                       try {
                         print("Proceeding to login...");
-                        final Response<dynamic>? response = await login(
+
+                        // Use dynamic type here to let Dart resolve the extraction dynamically
+                        // if your login client signature varies.
+                        final dynamic response = await login(
                           _usernameController.text.trim(),
                           _passwordController.text.trim(),
                         );
 
-                        // 1. Verify we have a valid, successful response
+                        // 1. Verify we have a valid response status
                         if (response != null && response.statusCode == 200) {
-                          final responseData = response.data['data']?['createUser'];
+
+                          // Drill down nested backend structure: response.data['data']
+                          final Map<String, dynamic>? dataWrapper = response.data['data'];
+                          final Map<String, dynamic>? responseData = dataWrapper?['user'];
 
                           if (responseData != null) {
-                            // 2. Extract data safely
+                            // 2. Extract data safely as Map<String, dynamic>
                             Map<String, dynamic> apiResponse = {
                               'username': responseData['username'],
                               'fullName': responseData['fullName'],
                               'email': responseData['email'],
                               'avatar': responseData['avatar'],
                               'coverImage': responseData['coverImage'],
+                              'accessToken': dataWrapper?['accessToken'], // <-- Extra security token captured
                             };
 
                             // 3. Save to provider
-                            final userProvider = Provider.of<UserLoginProvider>(context, listen: false);
-                            userProvider.putData(apiResponse);
-
+                            if (mounted) {
+                              final userProvider = Provider.of<UserLoginProvider>(context, listen: false);
+                              userProvider.putData(apiResponse);
+                            }
 
                             // 4. Turn off loader before leaving the screen
                             setState(() {
@@ -124,7 +140,6 @@ class _LoginFormState extends State<LoginForm> {
                             throw Exception("Unexpected data structure from server");
                           }
                         } else {
-                          // Handle invalid credentials or bad status codes
                           _showErrorSnackbar("Invalid username or password.");
                           setState(() { _isLoading = false; });
                         }
@@ -133,8 +148,6 @@ class _LoginFormState extends State<LoginForm> {
                         _showErrorSnackbar("Something went wrong. Please try again.");
                         setState(() { _isLoading = false; });
                       }
-                    } else {
-                      print("Form is invalid!");
                     }
                   },
                   style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
@@ -153,8 +166,8 @@ class _LoginFormState extends State<LoginForm> {
       ),
     );
   }
-  void _showErrorSnackbar(String message) {
 
+  void _showErrorSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -164,4 +177,3 @@ class _LoginFormState extends State<LoginForm> {
     );
   }
 }
-
