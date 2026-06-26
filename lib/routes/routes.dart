@@ -4,13 +4,15 @@ import 'package:provider/provider.dart';
 import '../provider/userlogin.provider.dart';
 import '../screens/authSigninSignup.dart';
 import '../screens/homepage.dart';
+import '../screens/userProfile.dart';
 
 class Routes {
   static const String login = "/auth";
   static const String testing = "/testing";
-
   // Base path for the homepage routing parsing
   static const String homepagePrefix = "/user/";
+  static const String profilePrefix = "/user/profile/";
+  static  String profilePage(String userId) => "$profilePrefix$userId" ;
 
   // Helper method to generate the dynamic path string when navigating
   static String homepage(String userId) => "$homepagePrefix$userId";
@@ -18,7 +20,19 @@ class Routes {
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     final name = settings.name ?? '';
 
-    // 1. Handle Dynamic /user/:id Routes
+    if(name.startsWith(profilePrefix)){
+      return MaterialPageRoute(settings : settings , builder: (routingContext){
+        final userProvider = Provider.of<UserLoginProvider>(routingContext , listen: false);
+        final bool isLoggedIn = userProvider.isLoggedIn ;
+
+        if(isLoggedIn && userProvider.user!.username == name.replaceFirst(profilePrefix, "")){
+          return const userProfile() ;
+        }else{
+          return const  Homepage() ;
+        }
+      });
+    }
+
     if (name.startsWith(homepagePrefix)) {
       final userId = name.replaceFirst(homepagePrefix, '');
 
@@ -28,8 +42,8 @@ class Routes {
           final userProvider = Provider.of<UserLoginProvider>(routingContext, listen: false);
           final bool isLoggedIn = userProvider.isLoggedIn;
 
-          if (isLoggedIn) {
-            return Homepage(userId: userId);
+          if (isLoggedIn && userProvider.user!.username==userId ) {
+            return Homepage();
           } else {
 
             return const Auth_Login_Signup();

@@ -6,13 +6,13 @@ import 'package:provider/provider.dart';
 import '../data/model/post_model.dart';
 import '../data/network/feeddioClient.dart';
 import '../routes/routes.dart';
+import '../utils/multiImageViewer.dart';
 
 // 🔧 ADJUST THESE TWO PATHS to match where these actually live in your project
 
 
 class Homepage extends StatefulWidget {
-  final String userId;
-  const Homepage({super.key, required this.userId});
+  const Homepage({super.key});
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -108,47 +108,72 @@ class _HomepageState extends State<Homepage> {
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      InkWell(
-                        onTap: () => _showLogoutConfirmation(context),
-                        child: CircleAvatar(
-                          radius: 25,
-                          backgroundImage: (data?.avatarUrl != null && data!.avatarUrl!.isNotEmpty)
-                              ? NetworkImage(data.avatarUrl!)
-                              : const NetworkImage('https://via.placeholder.com/150'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextFormField(
-                          controller: _searchController,
-                          style: TextStyle(color: adaptiveTextColor),
-                          decoration: InputDecoration(
-                            hintText: 'Search or type here...',
-                            hintStyle: TextStyle(color: adaptiveSubtextColor),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      IconButton(
-                        icon: Icon(Icons.notifications_none_outlined, color: adaptiveTextColor),
-                        onPressed: () => print("Search text: ${_searchController.text}"),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 18,
-                    width: double.infinity,
-                    child: Divider(thickness: 2, color: _isDark ? Colors.white24 : Colors.grey[300]),
-                  ),
-
-                  // --- Feed Content ---
                   Expanded(
-                    child: _buildFeedBody(_isDark, adaptiveTextColor, adaptiveSubtextColor),
-                  ),
+                    child: Column(children: [
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: () {
+
+                            },
+                            child: CircleAvatar(
+                              radius: 25,
+                              backgroundImage: (data?.avatar != null && data!.avatar!.isNotEmpty)
+                                  ? NetworkImage(data.avatar!)
+                                  : const NetworkImage('https://via.placeholder.com/150'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _searchController,
+                              style: TextStyle(color: adaptiveTextColor),
+                              decoration: InputDecoration(
+                                hintText: 'Search or type here...',
+                                hintStyle: TextStyle(color: adaptiveSubtextColor),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          IconButton(
+                            icon: Icon(Icons.notifications_none_outlined, color: adaptiveTextColor),
+                            onPressed: () => print("Search text: ${_searchController.text}"),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 18,
+                        width: double.infinity,
+                        child: Divider(thickness: 2, color: _isDark ? Colors.white24 : Colors.grey[300]),
+                      ),
+
+                      // --- Feed Content ---
+                      Expanded(
+                        child: _buildFeedBody(_isDark, adaptiveTextColor, adaptiveSubtextColor),
+                      ),
+                    ],),
+                  ) ,
+                  Row( mainAxisAlignment : MainAxisAlignment.spaceEvenly , children: [
+                    CircleAvatar(child: Icon(Icons.home , color: Colors.white,)) ,
+                    CircleAvatar(child: Icon(Icons.message)) ,
+                    CircleAvatar(child: Icon(Icons.add)) ,
+                    CircleAvatar(child: Icon(Icons.search)) ,
+                    InkWell(
+                      onTap: (){
+                        Navigator.pushReplacementNamed(
+                          context,
+                          Routes.profilePage(data!.username),
+                        );
+                      },
+                      child: CircleAvatar(backgroundImage: (data?.avatar != null && data!.avatar!.isNotEmpty)
+                          ? NetworkImage(data.avatar!)
+                          : const NetworkImage('https://via.placeholder.com/150'),),
+                    )
+
+                  ],)
+
                 ],
               ),
             ),
@@ -245,7 +270,7 @@ class _HomepageState extends State<Homepage> {
                     Text(post.text, style: TextStyle(fontSize: 16, color: textColor)),
                   if (post.mediaUrl.isNotEmpty) ...[
                     const SizedBox(height: 12),
-                    _PostMediaGallery(urls: post.mediaUrl),
+                    PostMediaGallery(urls: post.mediaUrl),
                   ],
                   const SizedBox(height: 12),
                   Row(
@@ -271,26 +296,6 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  void _showLogoutConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (alertContext) => AlertDialog(
-        title: const Text("Logout"),
-        content: const Text("Are you sure you want to log out?"),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(alertContext), child: const Text("Cancel")),
-          TextButton(
-              onPressed: () {
-                Navigator.pop(alertContext);
-                Provider.of<UserLoginProvider>(context, listen: false).logout();
-                Navigator.pushNamedAndRemoveUntil(context, Routes.login, (route) => false);
-              },
-              child: const Text("Logout", style: TextStyle(color: Colors.red))
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showCommentsBottomSheet(BuildContext context, bool isDark, List<dynamic> comments) {
     showModalBottomSheet(
@@ -358,98 +363,6 @@ class _HomepageState extends State<Homepage> {
           },
         );
       },
-    );
-  }
-}
-
-/// A horizontal, swipeable image slider for posts with multiple images.
-/// Snaps one image per page and shows dot indicators below for position,
-/// like a typical Instagram-style carousel.
-class _PostMediaGallery extends StatefulWidget {
-  final List<String> urls;
-  const _PostMediaGallery({required this.urls});
-
-  @override
-  State<_PostMediaGallery> createState() => _PostMediaGalleryState();
-}
-
-class _PostMediaGalleryState extends State<_PostMediaGallery> {
-  late final PageController _pageController;
-  int _currentIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  Widget _buildImage(String url) {
-    return Image.network(
-      url,
-      fit: BoxFit.cover,
-      width: double.infinity,
-      loadingBuilder: (context, child, progress) {
-        if (progress == null) return child;
-        return const Center(child: CircularProgressIndicator());
-      },
-      errorBuilder: (context, error, stack) => const Center(child: Icon(Icons.broken_image)),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final urls = widget.urls;
-
-    // Single image: no slider needed, just show it.
-    if (urls.length == 1) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(height: 220, width: double.infinity, child: _buildImage(urls.first)),
-      );
-    }
-
-    // Multiple images: full-width slider that snaps one at a time, with dots below.
-    return Column(
-      children: [
-        SizedBox(
-          height: 220,
-          width: double.infinity,
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: urls.length,
-            onPageChanged: (index) => setState(() => _currentIndex = index),
-            itemBuilder: (context, index) {
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: _buildImage(urls[index]),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(urls.length, (index) {
-            final isActive = index == _currentIndex;
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              width: isActive ? 8 : 6,
-              height: isActive ? 8 : 6,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey.withOpacity(0.5),
-              ),
-            );
-          }),
-        ),
-      ],
     );
   }
 }

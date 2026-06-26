@@ -8,32 +8,30 @@ final Dio dio = Dio(
   ),
 );
 
-/// Sends a login request to the backend server.
-/// Returns a [Response] object on success, or [null] if an error occurs.
-Future<Response<dynamic>?> login(String username, String password) async {
+Future<Map<String, dynamic>?> login(String username, String password) async {
   try {
-    // ⚠️ CRITICAL NOTE: "localhost" only works for Web or iOS Simulators.
-    // Read the environment guide below if using an Android Emulator or physical device.
     final response = await dio.post(
-      "http://10.0.2.2:3000/groupin/api/v1/users/login",
+      "http://localhost:3000/groupin/api/v1/users/login",
       data: {
         "username": username,
         "password": password,
       },
     );
 
-    print("Login Success: ${response.data}");
-
-    // Safely printing the token to ensure no null-pointer crashes
-    if (response.data != null && response.data['data'] != null) {
-      print("${response.data['data']['accessToken']} access token");
+    final data = response.data?['data'];
+    if (data == null || data['user'] == null) {
+      print("Login response missing expected data: ${response.data}");
+      return null;
     }
 
-    return response;
+    print("Login Success: ${response.data}");
+    print("${data['accessToken']} access token");
+
+    return data['user'] as Map<String, dynamic>;
   } on DioException catch (e) {
     print("Dio error during login: ${e.message}");
     print("Dio response data: ${e.response?.data}");
-    return e.response; // Returning the response so your UI can parse the 400/401 error message status
+    return null;
   } catch (e) {
     print("Unexpected error during login: $e");
     return null;

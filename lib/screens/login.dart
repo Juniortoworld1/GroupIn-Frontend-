@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:groupin/data/model/userModel.dart';
 import 'package:provider/provider.dart';
 
+import '../constants/heighWidth.dart';
 import '../data/network/logindioClient.dart';
 import '../provider/Global.provider.dart';
 import '../provider/userlogin.provider.dart';
@@ -37,7 +39,7 @@ class _LoginFormState extends State<LoginForm> {
     return Center(
       child: AnimatedContainer(
         duration: const Duration(seconds: 2),
-        width: screenWidth >= 800 ? screenWidth * 0.6 : screenWidth,
+        width: AppSizes.width(context) ,
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
@@ -93,51 +95,37 @@ class _LoginFormState extends State<LoginForm> {
                       try {
                         print("Proceeding to login...");
 
-                        // Use dynamic type here to let Dart resolve the extraction dynamically
-                        // if your login client signature varies.
                         final dynamic response = await login(
                           _usernameController.text.trim(),
                           _passwordController.text.trim(),
                         );
 
-                        // 1. Verify we have a valid response status
-                        if (response != null && response.statusCode == 200) {
-
-                          // Drill down nested backend structure: response.data['data']
-                          final Map<String, dynamic>? dataWrapper = response.data['data'];
-                          final Map<String, dynamic>? responseData = dataWrapper?['user'];
-
-                          if (responseData != null) {
-                            // 2. Extract data safely as Map<String, dynamic>
-                            Map<String, dynamic> apiResponse = {
-                              'username': responseData['username'],
-                              'fullName': responseData['fullName'],
-                              'email': responseData['email'],
-                              'avatar': responseData['avatar'],
-                              'coverImage': responseData['coverImage'],
-                              'accessToken': dataWrapper?['accessToken'], // <-- Extra security token captured
-                            };
-
-                            // 3. Save to provider
-                            if (mounted) {
-                              final userProvider = Provider.of<UserLoginProvider>(context, listen: false);
-                              userProvider.putData(apiResponse);
-                            }
-
-                            // 4. Turn off loader before leaving the screen
-                            setState(() {
-                              _isLoading = false;
-                            });
-
-                            // 5. Navigate safely
-                            if (mounted) {
-                              Navigator.pushReplacementNamed(
-                                context,
-                                Routes.homepage(responseData['username']),
-                              );
-                            }
-                          } else {
+                        // 1. Verify we got a valid user object back
+                        if (response != null) {
+                          if (response is! Map<String, dynamic>) {
                             throw Exception("Unexpected data structure from server");
+                          }
+
+                          // 2. Parse the single user object into UserModel
+                          final userDetail = UserModel.fromMap(response);
+
+                          // 3. Save to provider
+                          if (mounted) {
+                            final userProvider = Provider.of<UserLoginProvider>(context, listen: false);
+                            userProvider.putData(userDetail);
+                          }
+
+                          // 4. Turn off loader before leaving the screen
+                          setState(() {
+                            _isLoading = false;
+                          });
+
+                          // 5. Navigate safely
+                          if (mounted) {
+                            Navigator.pushReplacementNamed(
+                              context,
+                              Routes.homepage(userDetail.username),
+                            );
                           }
                         } else {
                           _showErrorSnackbar("Invalid username or password.");
