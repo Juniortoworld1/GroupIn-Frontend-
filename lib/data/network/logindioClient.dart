@@ -15,7 +15,7 @@ Future<Response<dynamic>?> login(String username, String password) async {
     // ⚠️ CRITICAL NOTE: "localhost" only works for Web or iOS Simulators.
     // Read the environment guide below if using an Android Emulator or physical device.
     final response = await dio.post(
-      "http://localhost:3000/groupin/api/v1/users/login",
+      "http://10.0.2.2:3000/groupin/api/v1/users/login",
       data: {
         "username": username,
         "password": password,

@@ -1,3 +1,5 @@
+import 'dart:isolate';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart'; // Required for kIsWeb
 
@@ -10,13 +12,15 @@ final dio = Dio(
   ),
 );
 // Login remains unchanged
-Future<Response?> feed() async {
+Future<dynamic> feed() async {
   try {
     final response = await dio.get(
-      "http://localhost:3000/groupin/api/v1/users/feed",
+      "http://10.0.2.2:3000/groupin/api/v1/users/feed",
     );
     print("Login Success: ${response.data}");
-    return response;
+    
+    return response.data['data']; 
+
   } catch (e) {
     print("Error during login: $e");
     return null;

@@ -23,8 +23,6 @@ class Routes {
       final userId = name.replaceFirst(homepagePrefix, '');
 
       return MaterialPageRoute(
-        // FIX: Ensure settings (which contains the name string) are explicitly bound
-        // to pass the structural web URL configuration parameters safely to the engine
         settings: settings,
         builder: (routingContext) {
           final userProvider = Provider.of<UserLoginProvider>(routingContext, listen: false);
@@ -33,9 +31,7 @@ class Routes {
           if (isLoggedIn) {
             return Homepage(userId: userId);
           } else {
-            // CRITICAL WEB FIX: If the user is NOT logged in but browser history pushes them
-            // to a /user/:id path, do not just build the Auth page on top of a broken path.
-            // We force the underlying settings block to report as the login path instead.
+
             return const Auth_Login_Signup();
           }
         },
@@ -44,7 +40,7 @@ class Routes {
 
     // 2. Handle Static Routes
     switch (name) {
-      case "/":      // Root entry mapping
+      case "/":// Root entry mapping
       case login:    // Matches "/auth"
         return MaterialPageRoute(
           settings: settings,
