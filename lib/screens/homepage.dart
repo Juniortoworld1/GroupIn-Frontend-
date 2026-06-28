@@ -4,12 +4,10 @@ import 'package:groupin/provider/userlogin.provider.dart';
 import 'package:provider/provider.dart';
 
 import '../data/model/post_model.dart';
-import '../data/network/feeddioClient.dart';
 import '../routes/routes.dart';
+import '../utils/PostRefresh.dart';
 import '../utils/multiImageViewer.dart';
-
-// 🔧 ADJUST THESE TWO PATHS to match where these actually live in your project
-
+// Import your helper class here
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -22,54 +20,11 @@ class _HomepageState extends State<Homepage> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _postMessage = TextEditingController();
 
-  List<PostModel> _posts = [];
-  bool _isLoading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFeed();
-  }
-
   @override
   void dispose() {
     _searchController.dispose();
     _postMessage.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadFeed() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      final data = await feed(); // returns response.data['data'], i.e. a List<dynamic>
-
-      if (data == null) {
-        setState(() {
-          _error = "Couldn't load your feed. Pull down to try again.";
-          _isLoading = false;
-        });
-        return;
-      }
-
-      final posts = (data as List)
-          .map((item) => PostModel.fromMap(item as Map<String, dynamic>))
-          .toList();
-
-      setState(() {
-        _posts = posts;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = "Something went wrong loading the feed.";
-        _isLoading = false;
-      });
-    }
   }
 
   String _formatDate(String iso) {
@@ -109,71 +64,80 @@ class _HomepageState extends State<Homepage> {
               child: Column(
                 children: [
                   Expanded(
-                    child: Column(children: [
-                      Row(
-                        children: [
-                          InkWell(
-                            onTap: () {
-
-                            },
-                            child: CircleAvatar(
-                              radius: 25,
-                              backgroundImage: (data?.avatar != null && data!.avatar!.isNotEmpty)
-                                  ? NetworkImage(data.avatar!)
-                                  : const NetworkImage('https://via.placeholder.com/150'),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _searchController,
-                              style: TextStyle(color: adaptiveTextColor),
-                              decoration: InputDecoration(
-                                hintText: 'Search or type here...',
-                                hintStyle: TextStyle(color: adaptiveSubtextColor),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            InkWell(
+                              onTap: () {},
+                              child: CircleAvatar(
+                                radius: 25,
+                                backgroundImage: (data?.avatar != null && data!.avatar!.isNotEmpty)
+                                    ? NetworkImage(data.avatar!)
+                                    : const NetworkImage('https://via.placeholder.com/150'),
                               ),
                             ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _searchController,
+                                style: TextStyle(color: adaptiveTextColor),
+                                decoration: InputDecoration(
+                                  hintText: 'Search or type here...',
+                                  hintStyle: TextStyle(color: adaptiveSubtextColor),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            IconButton(
+                              icon: Icon(Icons.notifications_none_outlined, color: adaptiveTextColor),
+                              onPressed: () => print("Search text: ${_searchController.text}"),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 18,
+                          width: double.infinity,
+                          child: Divider(thickness: 2, color: _isDark ? Colors.white24 : Colors.grey[300]),
+                        ),
+
+                        // --- Feed Content ---
+                        Expanded(
+                          child: Postrefresh(
+                            builder: (context, posts, onRefresh) {
+                              return _buildFeedBody(posts, _isDark, adaptiveTextColor, adaptiveSubtextColor);
+                            },
                           ),
-                          const SizedBox(width: 12),
-                          IconButton(
-                            icon: Icon(Icons.notifications_none_outlined, color: adaptiveTextColor),
-                            onPressed: () => print("Search text: ${_searchController.text}"),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 18,
-                        width: double.infinity,
-                        child: Divider(thickness: 2, color: _isDark ? Colors.white24 : Colors.grey[300]),
-                      ),
-
-                      // --- Feed Content ---
-                      Expanded(
-                        child: _buildFeedBody(_isDark, adaptiveTextColor, adaptiveSubtextColor),
-                      ),
-                    ],),
-                  ) ,
-                  Row( mainAxisAlignment : MainAxisAlignment.spaceEvenly , children: [
-                    CircleAvatar(child: Icon(Icons.home , color: Colors.white,)) ,
-                    CircleAvatar(child: Icon(Icons.message)) ,
-                    CircleAvatar(child: Icon(Icons.add)) ,
-                    CircleAvatar(child: Icon(Icons.search)) ,
-                    InkWell(
-                      onTap: (){
-                        Navigator.pushReplacementNamed(
-                          context,
-                          Routes.profilePage(data!.username),
-                        );
-                      },
-                      child: CircleAvatar(backgroundImage: (data?.avatar != null && data!.avatar!.isNotEmpty)
-                          ? NetworkImage(data.avatar!)
-                          : const NetworkImage('https://via.placeholder.com/150'),),
-                    )
-
-                  ],)
-
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      const CircleAvatar(child: Icon(Icons.home, color: Colors.white)),
+                      const CircleAvatar(child: Icon(Icons.message)),
+                      const CircleAvatar(child: Icon(Icons.add)),
+                      const CircleAvatar(child: Icon(Icons.search)),
+                      InkWell(
+                        onTap: () {
+                          if (data != null) {
+                            Navigator.pushReplacementNamed(
+                              context,
+                              Routes.profilePage(data.username),
+                            );
+                          }
+                        },
+                        child: CircleAvatar(
+                          backgroundImage: (data?.avatar != null && data!.avatar!.isNotEmpty)
+                              ? NetworkImage(data.avatar!)
+                              : const NetworkImage('https://via.placeholder.com/150'),
+                        ),
+                      )
+                    ],
+                  )
                 ],
               ),
             ),
@@ -183,41 +147,23 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  Widget _buildFeedBody(bool isDark, Color textColor, Color subtextColor) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(_error!, style: TextStyle(color: subtextColor), textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            ElevatedButton(onPressed: _loadFeed, child: const Text("Retry")),
-          ],
-        ),
-      );
-    }
-
-    if (_posts.isEmpty) {
+  // Updated to accept the runtime list injected by Postrefresh
+  Widget _buildFeedBody(List<PostModel> posts, bool isDark, Color textColor, Color subtextColor) {
+    if (posts.isEmpty) {
       return Center(
         child: Text("No posts yet", style: TextStyle(color: subtextColor, fontSize: 16)),
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadFeed,
-      child: ListView.separated(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(top: 8),
-        itemCount: _posts.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, index) {
-          return _buildPostCard(_posts[index], isDark, textColor, subtextColor);
-        },
-      ),
+    // Postrefresh wrapper already contains the RefreshIndicator internally!
+    return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(top: 8),
+      itemCount: posts.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        return _buildPostCard(posts[index], isDark, textColor, subtextColor);
+      },
     );
   }
 
@@ -228,12 +174,8 @@ class _HomepageState extends State<Homepage> {
         Row(
           children: [
             CircleAvatar(
-              backgroundImage: post.author.avatar.isNotEmpty
-                  ? NetworkImage(post.author.avatar)
-                  : null,
-              child: post.author.avatar.isEmpty
-                  ? const Icon(Icons.person, color: Colors.white)
-                  : null,
+              backgroundImage: post.author.avatar.isNotEmpty ? NetworkImage(post.author.avatar) : null,
+              child: post.author.avatar.isEmpty ? const Icon(Icons.person, color: Colors.white) : null,
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -266,8 +208,7 @@ class _HomepageState extends State<Homepage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (post.text.isNotEmpty)
-                    Text(post.text, style: TextStyle(fontSize: 16, color: textColor)),
+                  if (post.text.isNotEmpty) Text(post.text, style: TextStyle(fontSize: 16, color: textColor)),
                   if (post.mediaUrl.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     PostMediaGallery(urls: post.mediaUrl),
@@ -295,7 +236,6 @@ class _HomepageState extends State<Homepage> {
       ],
     );
   }
-
 
   void _showCommentsBottomSheet(BuildContext context, bool isDark, List<dynamic> comments) {
     showModalBottomSheet(
@@ -328,10 +268,11 @@ class _HomepageState extends State<Homepage> {
                   const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                        "Comments",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)
-                    ),
+                    child: Text("Comments",
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black)),
                   ),
                   const Divider(),
                   Expanded(
@@ -346,13 +287,13 @@ class _HomepageState extends State<Homepage> {
                       controller: scrollController,
                       itemCount: comments.length,
                       itemBuilder: (context, index) {
-                        // ⚠️ Adjust field names below once your Comment shape is known
                         final c = comments[index];
                         final commentText = c is Map ? (c['text'] ?? c.toString()) : c.toString();
                         return ListTile(
                           leading: const CircleAvatar(child: Icon(Icons.person)),
                           title: Text("User", style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-                          subtitle: Text(commentText.toString(), style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                          subtitle: Text(commentText.toString(),
+                              style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
                         );
                       },
                     ),

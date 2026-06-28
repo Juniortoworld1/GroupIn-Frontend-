@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:groupin/screens/testing.dart';
 import 'package:provider/provider.dart';
 
 import '../provider/userlogin.provider.dart';
@@ -52,6 +53,11 @@ class Routes {
       );
     }
 
+    switch(name){
+      case "/testing" :
+      case testing:
+        return MaterialPageRoute( settings : settings , builder: (context)=> const Testing());
+    }
     // 2. Handle Static Routes
     switch (name) {
       case "/":// Root entry mapping
