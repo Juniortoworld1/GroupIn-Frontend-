@@ -11,83 +11,90 @@ import '../screens/userProfile.dart';
 class Routes {
   static const String login = "/auth";
   static const String testing = "/testing";
-  // Base path for the homepage routing parsing
+
   static const String homepagePrefix = "/user/";
   static const String profilePrefix = "/user/profile/";
-  static  String profilePage(String userId) => "$profilePrefix$userId" ;
+  static const String newPostPrefix = "/user/post/";
+
+  static String profilePage(String userId) => "$profilePrefix$userId";
   static String homepage(String userId) => "$homepagePrefix$userId";
-  static String newPostPrefix = "/user/post/";
-  static String newPostPage(String userId) => "$newPostPrefix$userId" ;
+  static String newPostPage(String userId) => "$newPostPrefix$userId";
+
   static Route<dynamic>? generateRoute(RouteSettings settings) {
-    final name = settings.name ?? '';
+    // Standardize root domain loading parameters smoothly
+    final name = (settings.name == null || settings.name == "/") ? login : settings.name!;
 
-    if(name.startsWith(profilePrefix)){
-      return MaterialPageRoute(settings : settings , builder: (routingContext){
-        final userProvider = Provider.of<UserLoginProvider>(routingContext , listen: false);
-        final bool isLoggedIn = userProvider.isLoggedIn ;
-
-        if(isLoggedIn && userProvider.user!.username == name.replaceFirst(profilePrefix, "")){
-          return const userProfile() ;
-        }else{
-          return const  Auth_Login_Signup() ;
-        }
-      });
+    // 1. Handle Static Explicit Matches First
+    if (name == login) {
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (context) => const Auth_Login_Signup(),
+      );
     }
 
-    if(name.startsWith(newPostPrefix)){
-      return MaterialPageRoute(settings : settings , builder: (routingContext){
-        final userProvider = Provider.of<UserLoginProvider>(routingContext , listen: false);
-        final bool isLoggedIn = userProvider.isLoggedIn ;
-
-        if(isLoggedIn && userProvider.user!.username == name.replaceFirst(profilePrefix, "")){
-          return const CreatePostScreen();
-        }else{
-          return const  Auth_Login_Signup() ;
-        }
-      });
+    if (name == testing) {
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (context) => const Testing(),
+      );
     }
 
-    if (name.startsWith(homepagePrefix)) {
-      final userId = name.replaceFirst(homepagePrefix, '');
-
+    // 2. Handle Deep Nested Dynamic Subpaths (Specific rules must come BEFORE broad rules)
+    if (name.startsWith(profilePrefix)) {
       return MaterialPageRoute(
         settings: settings,
         builder: (routingContext) {
           final userProvider = Provider.of<UserLoginProvider>(routingContext, listen: false);
-          final bool isLoggedIn = userProvider.isLoggedIn;
+          final String usernameParam = name.replaceFirst(profilePrefix, "");
 
-          if (isLoggedIn && userProvider.user!.username==userId ) {
-            return Homepage();
+          if (userProvider.isLoggedIn && userProvider.user?.username == usernameParam) {
+            return const userProfile();
           } else {
-
             return const Auth_Login_Signup();
           }
         },
       );
     }
 
-    switch(name){
-      case "/testing" :
-      case testing:
-        return MaterialPageRoute( settings : settings , builder: (context)=> const Testing());
-    }
-    // 2. Handle Static Routes
-    switch (name) {
-      case "/":// Root entry mapping
-      case login:    // Matches "/auth"
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (context) => const Auth_Login_Signup(),
-        );
+    if (name.startsWith(newPostPrefix)) {
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (routingContext) {
+          final userProvider = Provider.of<UserLoginProvider>(routingContext, listen: false);
+          final String usernameParam = name.replaceFirst(newPostPrefix, ""); // Fixed bug here
 
-      default:
-      // Catch-all route mapping fallback configuration
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (context) => const Scaffold(
-            body: Center(child: Text('Route not found')),
-          ),
-        );
+          if (userProvider.isLoggedIn && userProvider.user?.username == usernameParam) {
+            return const CreatePostScreen();
+          } else {
+            return const Auth_Login_Signup();
+          }
+        },
+      );
     }
+
+    // Broadest check comes last so it doesn't intercept profile or posts
+    if (name.startsWith(homepagePrefix)) {
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (routingContext) {
+          final userProvider = Provider.of<UserLoginProvider>(routingContext, listen: false);
+          final String usernameParam = name.replaceFirst(homepagePrefix, "");
+
+          if (userProvider.isLoggedIn && userProvider.user?.username == usernameParam) {
+            return Homepage();
+          } else {
+            return const Auth_Login_Signup();
+          }
+        },
+      );
+    }
+
+    // 3. Absolute Fallback Catch-All configuration
+    return MaterialPageRoute(
+      settings: settings,
+      builder: (context) => const Scaffold(
+        body: Center(child: Text('Route not found')),
+      ),
+    );
   }
 }
