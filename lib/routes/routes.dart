@@ -56,7 +56,7 @@ class Routes {
     switch(name){
       case "/testing" :
       case testing:
-        return MaterialPageRoute( settings : settings , builder: (context)=> const Testing());
+        return MaterialPageRoute( settings : settings , builder: (context)=> const CreatePostScreen());
     }
     // 2. Handle Static Routes
     switch (name) {
