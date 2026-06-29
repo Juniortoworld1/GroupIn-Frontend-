@@ -48,7 +48,7 @@ Future<Response?> signup({
 
     // 4. Fire the request
     final response = await dio.post(
-      "http://10.0.2.2:3000/groupin/api/v1/users/register",
+      "https://groupin-backend.onrender.com/groupin/api/v1/users/register",
       data: formData, // Crucial: Send FormData, not a raw Map
     );
 

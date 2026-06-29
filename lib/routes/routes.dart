@@ -3,6 +3,7 @@ import 'package:groupin/screens/testing.dart';
 import 'package:provider/provider.dart';
 
 import '../provider/userlogin.provider.dart';
+import '../screens/NewPost.dart';
 import '../screens/authSigninSignup.dart';
 import '../screens/homepage.dart';
 import '../screens/userProfile.dart';
@@ -14,10 +15,9 @@ class Routes {
   static const String homepagePrefix = "/user/";
   static const String profilePrefix = "/user/profile/";
   static  String profilePage(String userId) => "$profilePrefix$userId" ;
-
-  // Helper method to generate the dynamic path string when navigating
   static String homepage(String userId) => "$homepagePrefix$userId";
-
+  static String newPostPrefix = "/user/post/";
+  static String newPostPage(String userId) => "$newPostPrefix$userId" ;
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     final name = settings.name ?? '';
 
@@ -29,7 +29,20 @@ class Routes {
         if(isLoggedIn && userProvider.user!.username == name.replaceFirst(profilePrefix, "")){
           return const userProfile() ;
         }else{
-          return const  Homepage() ;
+          return const  Auth_Login_Signup() ;
+        }
+      });
+    }
+
+    if(name.startsWith(newPostPrefix)){
+      return MaterialPageRoute(settings : settings , builder: (routingContext){
+        final userProvider = Provider.of<UserLoginProvider>(routingContext , listen: false);
+        final bool isLoggedIn = userProvider.isLoggedIn ;
+
+        if(isLoggedIn && userProvider.user!.username == name.replaceFirst(profilePrefix, "")){
+          return const CreatePostScreen();
+        }else{
+          return const  Auth_Login_Signup() ;
         }
       });
     }
@@ -56,7 +69,7 @@ class Routes {
     switch(name){
       case "/testing" :
       case testing:
-        return MaterialPageRoute( settings : settings , builder: (context)=> const CreatePostScreen());
+        return MaterialPageRoute( settings : settings , builder: (context)=> const Testing());
     }
     // 2. Handle Static Routes
     switch (name) {

@@ -15,7 +15,7 @@ final dio = Dio(
 Future<dynamic> feed() async {
   try {
     final response = await dio.get(
-      "http://10.0.2.2:3000/groupin/api/v1/users/feed",
+      "https://groupin-backend.onrender.com/groupin/api/v1/users/feed",
     );
     print("Login Success: ${response.data}");
     
