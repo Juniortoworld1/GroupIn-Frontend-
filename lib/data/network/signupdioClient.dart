@@ -3,7 +3,13 @@ import 'package:flutter/foundation.dart'; // Required for kIsWeb
 
 import 'package:image_picker/image_picker.dart';
 
-final dio = Dio();
+final dio = Dio(
+  BaseOptions(
+    // 10-15 seconds is recommended for mobile networks to avoid premature timeouts
+    connectTimeout: const Duration(seconds: 15),
+    receiveTimeout: const Duration(seconds: 10),
+  ),
+);
 // Fixed Signup to match your working multipart request structure
 Future<Response?> signup({
   required String username,

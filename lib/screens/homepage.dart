@@ -119,7 +119,16 @@ class _HomepageState extends State<Homepage> {
                     children: [
                       const CircleAvatar(child: Icon(Icons.home, color: Colors.white)),
                       const CircleAvatar(child: Icon(Icons.message)),
-                      const CircleAvatar(child: Icon(Icons.add)),
+                      InkWell(
+                        onTap: (){
+                          if (data != null) {
+                            Navigator.pushReplacementNamed(
+                              context,
+                              Routes.newPostPage(data.username),
+                            );
+                          }
+                        },
+                          child: CircleAvatar(child: Icon(Icons.add))),
                       const CircleAvatar(child: Icon(Icons.search)),
                       InkWell(
                         onTap: () {

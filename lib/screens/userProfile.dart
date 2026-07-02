@@ -50,61 +50,69 @@ class _UserProfileState extends State<userProfile> {
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
-        appBar: AppBar(
-          backgroundColor: backgroundColor,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
-            onPressed: () => Navigator.maybePop(context),
-          ),
-          title: Text(
-            user?.username ?? 'Profile',
-            style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: Icon(Icons.menu_rounded, color: textColor),
-              onPressed: () {},
-            ),
-          ],
-        ),
         body: SafeArea(
           child: Center(
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               width: screenWidth > 800 ? screenWidth * 0.6 : screenWidth,
-              child: Postrefresh(
-                builder: (context, allPosts, onRefresh) {
-                  // Filters feed items strictly down to the active profile author context
-                  final userPosts = allPosts.where((post) => post.author.username == user?.username).toList();
-          
-                  return CustomScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      CupertinoSliverRefreshControl(onRefresh: () async => onRefresh()),
-          
-                      // --- Structural Profile Card Block ---
-                      SliverToBoxAdapter(
-                        child: _buildProfileCardHeader(user, isDark, textColor, subtitleColor, userPosts.length),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
+                        onPressed: () => Navigator.maybePop(context),
                       ),
-          
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      Expanded(
+                        child: Center(
                           child: Text(
-                            "My Posts",
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+                            user?.username ?? 'Profile',
+                            style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
-          
-                      // --- Home Feed Renderer Implementation ---
-                      _buildFeedList(userPosts, isDark, textColor, subtitleColor),
+                      IconButton(
+                        icon: Icon(Icons.menu_rounded, color: textColor),
+                        onPressed: () {},
+                      ),
                     ],
-                  );
-                },
+                  ) ,
+
+
+                  Expanded(
+                    child: Postrefresh(
+                      builder: (context, allPosts, onRefresh) {
+                        // Filters feed items strictly down to the active profile author context
+                        final userPosts = allPosts.where((post) => post.author.username == user?.username).toList();
+
+                        return CustomScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: [
+                            CupertinoSliverRefreshControl(onRefresh: () async => onRefresh()),
+
+                            // --- Structural Profile Card Block ---
+                            SliverToBoxAdapter(
+                              child: _buildProfileCardHeader(user, isDark, textColor, subtitleColor, userPosts.length),
+                            ),
+
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                child: Text(
+                                  "My Posts",
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+                                ),
+                              ),
+                            ),
+
+                            // --- Home Feed Renderer Implementation ---
+                            _buildFeedList(userPosts, isDark, textColor, subtitleColor),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

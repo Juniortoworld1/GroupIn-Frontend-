@@ -37,86 +37,109 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Widget build(BuildContext context) {
     final _isDark = context.watch<GlobalValueProvider>().getisDarkMode() ;
     final screenWidth = MediaQuery.sizeOf(context).width ;
-    return Scaffold(
-      appBar: AppBar(title: Text("Create Post" , style: TextStyle(color: _isDark?Colors.white10: Colors.black12),)),
-      // FIX: Wrap the body in a SingleChildScrollView
-      backgroundColor: _isDark?Colors.black:Colors.white,
-      body: Center(
-        child: Container(
-          width: screenWidth>700?screenWidth*0.6:screenWidth,
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(), // Provides smooth native scrolling
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  MultiImagePickerGrid(
-                    selectedFiles: _selectedImages,
-                    onPickImages: _pickMultipleImages,
-                    onRemoveImage: (index) {
-                      setState(() {
-                        _selectedImages.removeAt(index);
-                      });
-                    },
-                  ),
-
-
-                  const SizedBox(height: 24),
+    return
+      PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          Navigator.of(context).pushReplacementNamed('/user/${user?.username}');
+        },
+        child: Scaffold(
+        backgroundColor: _isDark?Colors.black:Colors.white,
+        body: Center(
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 200),
+            width: screenWidth>800?screenWidth*0.6:screenWidth,
+            child: Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.only(top: 18, left: 8),
+                  child: Row(children: [
+                    Icon(Icons.arrow_back_ios , color: _isDark?Colors.white:Colors.black12,) ,
+                    Expanded(child: Center(child: Text("New Post" , style: TextStyle(fontSize: 20 , fontWeight: FontWeight.bold ,color: _isDark?Colors.white24 : Colors.black12),),))
+                  ],),
+                ) ,
 
 
-                  AnimatedContainer(
-                    duration: Duration(seconds: 1),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12) ,
-                      border: Border.all(
-                        color: Colors.grey.shade300, // Quick shorthand for all sides
-                        width: 1.5,
-                      ),
-                    ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(), // Provides smooth native scrolling
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _postController,
-                              decoration: InputDecoration(
-                                hintText: "What's on your mind?",
-                                hintStyle: TextStyle(color: _isDark?Colors.white:Colors.black),
-                                border: InputBorder.none,
-                              ),
-                              maxLines: 4,
-                            ),
+
+                          MultiImagePickerGrid(
+                            selectedFiles: _selectedImages,
+                            onPickImages: _pickMultipleImages,
+                            onRemoveImage: (index) {
+                              setState(() {
+                                _selectedImages.removeAt(index);
+                              });
+                            },
                           ),
 
+
+                          const SizedBox(height: 24),
+
+
+                          AnimatedContainer(
+                            duration: Duration(seconds: 1),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12) ,
+                              border: Border.all(
+                                color: Colors.grey.shade300, // Quick shorthand for all sides
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _postController,
+                                      decoration: InputDecoration(
+                                        hintText: "What's on your mind?",
+                                        hintStyle: TextStyle(color: _isDark?Colors.white:Colors.black),
+                                        border: InputBorder.none,
+                                      ),
+                                      maxLines: 4,
+                                    ),
+                                  ),
+
+                                ],
+                              ),
+                            ),
+
+                          ),
+
+                          SizedBox(height: 8,) ,
+
+                          InkWell(
+                            child: Container(
+                              width: double.infinity,
+
+                              height: 35,
+                              decoration: BoxDecoration(
+                                color: Colors.green ,
+                                borderRadius: BorderRadius.circular(12) ,
+                              ),
+                              child: Center(child: Text("Post" , style: TextStyle(fontSize: 20 , fontWeight: FontWeight.bold ),)),
+                            ),
+                          )
                         ],
                       ),
                     ),
-
                   ),
-
-                  SizedBox(height: 8,) ,
-
-                  InkWell(
-                    child: Container(
-                      width: double.infinity,
-
-                      height: 35,
-                      decoration: BoxDecoration(
-                        color: Colors.green ,
-                        borderRadius: BorderRadius.circular(12) ,
-                      ),
-                      child: Center(child: Text("Post" , style: TextStyle(fontSize: 20 , fontWeight: FontWeight.bold ),)),
-                    ),
-                  )
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
-      ),
-    );
+            ),
+      );
   }
 }
