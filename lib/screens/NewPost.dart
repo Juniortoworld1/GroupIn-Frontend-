@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:groupin/provider/Global.provider.dart';
+import 'package:groupin/provider/userlogin.provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../utils/SelectingMultipleImage.dart';
@@ -37,6 +38,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Widget build(BuildContext context) {
     final _isDark = context.watch<GlobalValueProvider>().getisDarkMode() ;
     final screenWidth = MediaQuery.sizeOf(context).width ;
+    final user = context.watch<UserLoginProvider>().user ;
     return
       PopScope(
         canPop: false,
